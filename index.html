@@ -1,1 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Night Shift Recomp Tracker</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #4caf50; /* Green for success/action */
+            --accent-hover: #45a049;
+            --border-color: #333;
+            --secondary-text: #a0a0a0;
+            --tab-active-bg: #333;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .user-info {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            margin-top: 0.25rem;
+        }
+
+        /* Navigation Tabs */
+        nav {
+            display: flex;
+            overflow-x: auto;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on mobile */
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            padding: 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            flex: 1;
+            transition: color 0.2s, background-color 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+            background-color: var(--tab-active-bg);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 0.75rem;
+            margin-bottom: 1rem;
+            margin-top: 0;
+        }
+
+        p.desc {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Ensure content is readable on mobile scroll */
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #2c2c2c;
+            color: var(--secondary-text);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            position: sticky;
+            left: 0;
+        }
+
+        /* Sticky first column for mobile context */
+        td:first-child, th:first-child {
+            position: sticky;
+            left: 0;
+            background-color: var(--card-bg);
+            z-index: 1;
+            border-right: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        th:first-child {
+            background-color: #2c2c2c;
+            z-index: 2;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Inputs & Checkboxes */
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid var(--secondary-text);
+            border-radius: 4px;
+            background-color: transparent;
+            cursor: pointer;
+            position: relative;
+            vertical-align: middle;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✔';
+            color: white;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        input[type="text"], input[type="number"] {
+            background-color: #2c2c2c;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .data-cell {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        /* Utility */
+        .btn-reset {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 2rem;
+            width: 100%;
+            font-weight: bold;
+        }
+        
+        .reset-container {
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: var(--secondary-text);
+            font-style: italic;
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        /* Specific row styling */
+        .row-prep { background-color: rgba(255, 193, 7, 0.05); }
+        .row-rest { background-color: rgba(33, 150, 243, 0.05); }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Recomp Tracker</h1>
+    <div class="user-info">IT Pro (39) | Goal: 195 lbs | 4-Day Split</div>
+</header>
+
+<nav>
+    <button class="tab-btn active" onclick="openTab('schedule')">Schedule</button>
+    <button class="tab-btn" onclick="openTab('mobility')">Mobility</button>
+    <button class="tab-btn" onclick="openTab('workoutA')">Workout A</button>
+    <button class="tab-btn" onclick="openTab('workoutB')">Workout B</button>
+    <button class="tab-btn" onclick="openTab('habits')">Desk Habits</button>
+</nav>
+
+<main>
+
+    <!-- TAB 1: SCHEDULE -->
+    <div id="schedule" class="tab-content active">
+        <h2>Weekly Schedule & Consistency</h2>
+        <p class="desc">Check the box when you complete the main activity for that day.</p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Activity Focus</th>
+                        <th class="data-cell">Wk 1</th>
+                        <th class="data-cell">Wk 2</th>
+                        <th class="data-cell">Wk 3</th>
+                        <th class="data-cell">Wk 4</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    <!-- JS will populate -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: MOBILITY -->
+    <div id="mobility" class="tab-content">
+        <h2>Daily Mobility Checklist (7:00 PM)</h2>
+        <p class="desc">Do this immediately upon waking to fix "IT Guy Posture".</p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Movement</th>
+                        <th>Duration</th>
+                        <th class="data-cell">M</th>
+                        <th class="data-cell">T</th>
+                        <th class="data-cell">W</th>
+                        <th class="data-cell">T</th>
+                        <th class="data-cell">F</th>
+                        <th class="data-cell">S</th>
+                        <th class="data-cell">S</th>
+                    </tr>
+                </thead>
+                <tbody id="mobilityBody">
+                    <!-- JS will populate -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 3: WORKOUT A -->
+    <div id="workoutA" class="tab-content">
+        <h2>Workout A Log (Wed, Thu, Sat)</h2>
+        <p class="desc">Focus: Intensity & Speed. Rest: 45-60s. Log weight (lbs).</p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Set/Rep</th>
+                        <th class="data-cell">Wk 1</th>
+                        <th class="data-cell">Wk 2</th>
+                        <th class="data-cell">Wk 3</th>
+                        <th class="data-cell">Wk 4</th>
+                    </tr>
+                </thead>
+                <tbody id="workoutABody">
+                    <!-- JS will populate -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 4: WORKOUT B -->
+    <div id="workoutB" class="tab-content">
+        <h2>Workout B Log (Sun Off-Day)</h2>
+        <p class="desc">Focus: Volume & Stretch. Rest: 90s. Log weight (lbs).</p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Set/Rep</th>
+                        <th class="data-cell">Wk 1</th>
+                        <th class="data-cell">Wk 2</th>
+                        <th class="data-cell">Wk 3</th>
+                        <th class="data-cell">Wk 4</th>
+                    </tr>
+                </thead>
+                <tbody id="workoutBBody">
+                    <!-- JS will populate -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 5: DESK HABITS -->
+    <div id="habits" class="tab-content">
+        <h2>Desk Micro-Habits</h2>
+        <p class="desc">Goal: Reset posture every hour during work shift.</p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Habit</th>
+                        <th>Frequency</th>
+                        <th class="data-cell">Wed</th>
+                        <th class="data-cell">Thu</th>
+                        <th class="data-cell">Fri</th>
+                        <th class="data-cell">Sat</th>
+                    </tr>
+                </thead>
+                <tbody id="habitsBody">
+                    <!-- JS will populate -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="reset-container">
+        <button class="btn-reset" onclick="resetData()">Reset All Data</button>
+    </div>
+
+</main>
+
+<script>
+    // --- Data Configurations ---
+
+    const scheduleData = [
+        { day: "WEDNESDAY", status: "Work Night", focus: "WORKOUT A (3:00 AM)", id: "wed" },
+        { day: "THURSDAY", status: "Work Night", focus: "WORKOUT A (3:00 AM)", id: "thu" },
+        { day: "FRIDAY", status: "Work Night", focus: "ACTIVE RECOVERY", id: "fri", class: "row-rest" },
+        { day: "SATURDAY", status: "Work Night", focus: "WORKOUT A (3:00 AM)", id: "sat" },
+        { day: "SUNDAY", status: "Off Night", focus: "WORKOUT B (2:00 AM)", id: "sun" },
+        { day: "MONDAY", status: "Off Night", focus: "REST (Walk Only)", id: "mon", class: "row-rest" },
+        { day: "TUESDAY", status: "Prep Night", focus: "MEAL PREP (No Gym)", id: "tue", class: "row-prep" }
+    ];
+
+    const mobilityData = [
+        { move: "Couch Stretch", dur: "1 min/side" },
+        { move: "90/90 Hip Switch", dur: "10 Reps" },
+        { move: "Wall Slides", dur: "15 Reps" },
+        { move: "Doorway Stretch", dur: "30s/side" },
+        { move: "Cat-Cow", dur: "10 Reps" }
+    ];
+
+    const workoutAData = [
+        { ex: "Goblet Squat", sr: "3 x 10-12", note: "Chest up" },
+        { ex: "DB Floor Press", sr: "3 x 8-10", note: "NO BENCH" },
+        { ex: "DB Rows", sr: "3 x 10", note: "Squeeze lat" },
+        { ex: "Scaption Raise", sr: "3 x 12", note: "Thumbs UP" },
+        { ex: "Plank", sr: "3 x 45s", note: "Squeeze glutes" }
+    ];
+
+    const workoutBData = [
+        { ex: "DB RDL", sr: "4 x 10", note: "Hips BACK" },
+        { ex: "Landmine Press", sr: "3 x 10", note: "45° angle" },
+        { ex: "Reverse Lunges", sr: "3 x 10/leg", note: "Step back" },
+        { ex: "Bicep Curls", sr: "3 x 12", note: "No swinging" },
+        { ex: "Tricep Pushdown", sr: "3 x 12", note: "Elbows locked" },
+        { ex: "Interval Run", sr: "4 x 2m/2m", note: "HR 150+" }
+    ];
+
+    const habitsData = [
+        { hab: "Chin Tucks", freq: "5 reps/hr" },
+        { hab: "Glute Squeezes", freq: "On Calls" },
+        { hab: "Water Rule", freq: "20oz b4 Snack" },
+        { hab: "Stand Up", freq: "15m / hr" }
+    ];
+
+    // --- Render Functions ---
+
+    function renderSchedule() {
+        const tbody = document.getElementById('scheduleBody');
+        tbody.innerHTML = scheduleData.map(row => `
+            <tr class="${row.class || ''}">
+                <td>
+                    <div>${row.day}</div>
+                    <span class="note">${row.status}</span>
+                </td>
+                <td>${row.focus}</td>
+                ${[1,2,3,4].map(wk => `
+                    <td class="data-cell">
+                        <input type="checkbox" 
+                            id="sched_${row.id}_wk${wk}" 
+                            onchange="saveData('sched_${row.id}_wk${wk}', this.checked)"
+                        >
+                    </td>
+                `).join('')}
+            </tr>
+        `).join('');
+    }
+
+    function renderMobility() {
+        const tbody = document.getElementById('mobilityBody');
+        const days = ['M','T','W','T','F','S','S'];
+        tbody.innerHTML = mobilityData.map((row, idx) => `
+            <tr>
+                <td>${row.move}</td>
+                <td>${row.dur}</td>
+                ${days.map((d, i) => `
+                    <td class="data-cell">
+                        <input type="checkbox" 
+                            id="mob_${idx}_d${i}" 
+                            onchange="saveData('mob_${idx}_d${i}', this.checked)"
+                        >
+                    </td>
+                `).join('')}
+            </tr>
+        `).join('');
+    }
+
+    function renderWorkout(data, elementId, prefix) {
+        const tbody = document.getElementById(elementId);
+        tbody.innerHTML = data.map((row, idx) => `
+            <tr>
+                <td>
+                    <div>${row.ex}</div>
+                    <span class="note">${row.note}</span>
+                </td>
+                <td>${row.sr}</td>
+                ${[1,2,3,4].map(wk => `
+                    <td class="data-cell">
+                        <input type="text" 
+                            placeholder="lbs"
+                            id="${prefix}_${idx}_wk${wk}" 
+                            oninput="saveData('${prefix}_${idx}_wk${wk}', this.value)"
+                        >
+                    </td>
+                `).join('')}
+            </tr>
+        `).join('');
+    }
+
+    function renderHabits() {
+        const tbody = document.getElementById('habitsBody');
+        const days = ['Wed','Thu','Fri','Sat'];
+        tbody.innerHTML = habitsData.map((row, idx) => `
+            <tr>
+                <td>${row.hab}</td>
+                <td>${row.freq}</td>
+                ${days.map((d, i) => `
+                    <td class="data-cell">
+                        <input type="checkbox" 
+                            id="hab_${idx}_d${i}" 
+                            onchange="saveData('hab_${idx}_d${i}', this.checked)"
+                        >
+                    </td>
+                `).join('')}
+            </tr>
+        `).join('');
+    }
+
+    // --- Core Logic ---
+
+    // Tab Switching
+    window.openTab = function(tabName) {
+        const contents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < contents.length; i++) {
+            contents[i].classList.remove("active");
+        }
+        
+        const btns = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < btns.length; i++) {
+            btns[i].classList.remove("active");
+        }
+
+        document.getElementById(tabName).classList.add("active");
+        event.currentTarget.classList.add("active");
+    }
+
+    // Persistence
+    window.saveData = function(key, value) {
+        localStorage.setItem(key, value);
+    }
+
+    function loadData() {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            const saved = localStorage.getItem(input.id);
+            if (saved !== null) {
+                if (input.type === 'checkbox') {
+                    input.checked = (saved === 'true');
+                } else {
+                    input.value = saved;
+                }
+            }
+        });
+    }
+
+    window.resetData = function() {
+        if(confirm("Are you sure you want to clear all tracking data?")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+        renderSchedule();
+        renderMobility();
+        renderWorkout(workoutAData, 'workoutABody', 'wa');
+        renderWorkout(workoutBData, 'workoutBBody', 'wb');
+        renderHabits();
+        loadData();
+    });
+
+</script>
+
+</body>
+</html>
